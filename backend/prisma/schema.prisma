@@ -149,3 +149,4 @@ model ElectricityDailyAggregate {
   @@index([deviceId, date])
   @@map("electricity_daily_aggregates")
 }
+
