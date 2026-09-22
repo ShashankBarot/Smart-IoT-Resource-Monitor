@@ -1,0 +1,151 @@
+// ============================================================
+// Prisma Schema — Smart IoT Water & Electricity Monitor
+// ============================================================
+// This is the authoritative database schema for the project.
+// All members must reference this file for field names and types.
+//
+// Member 2 owns this file. Do not rename fields without
+// updating the MQTT contract and frontend types.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Device
+// Represents a single ESP32 device in the system.
+// Created/updated on first MQTT message from that deviceId.
+// ============================================================
+model Device {
+  id          String    @id @default(cuid())
+  deviceId    String    @unique               // e.g. "esp32-01" — matches MQTT payload field
+  name        String?                          // Human-readable label, optional
+  status      String    @default("offline")   // "online" | "offline"
+  lastSeenAt  DateTime?                        // Timestamp of last received MQTT message
+  rssi        Int?                             // Wi-Fi signal strength in dBm (from heartbeat)
+  freeHeap    Int?                             // Free heap bytes (from heartbeat)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  waterReadings        WaterReading[]
+  electricityReadings  ElectricityReading[]
+  anomalies            Anomaly[]
+
+  @@index([deviceId])
+  @@map("devices")
+}
+
+// ============================================================
+// WaterReading
+// One record per MQTT message. Stores the water fields.
+// Timestamp comes from the MQTT payload (device time), not
+// server insertion time (createdAt).
+// ============================================================
+model WaterReading {
+  id            String   @id @default(cuid())
+  deviceId      String                        // FK reference to Device.deviceId
+  device        Device   @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  flowRateLpm   Float                         // Current flow rate in litres per minute
+  totalLitres   Float                         // Cumulative litres since ESP32 boot
+  timestamp     DateTime                      // ISO 8601 timestamp from device payload
+  createdAt     DateTime @default(now())      // Server-side insert time
+
+  @@index([deviceId, timestamp])              // For per-device time-range queries
+  @@index([timestamp])                        // For global time-range queries
+  @@map("water_readings")
+}
+
+// ============================================================
+// ElectricityReading
+// One record per MQTT message. Stores all electricity fields.
+// ============================================================
+model ElectricityReading {
+  id          String   @id @default(cuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  voltage     Float                           // RMS voltage in Volts (from ZMPT101B)
+  current     Float                           // RMS current in Amperes (from ACS712)
+  power       Float                           // Active power in Watts (P = V × I × pf)
+  energyKwh   Float                           // Cumulative energy in kWh since boot
+  timestamp   DateTime                        // ISO 8601 timestamp from device payload
+  createdAt   DateTime @default(now())
+
+  @@index([deviceId, timestamp])
+  @@index([timestamp])
+  @@map("electricity_readings")
+}
+
+// ============================================================
+// Anomaly
+// Created by the anomaly detection service when a threshold
+// is exceeded. resourceType identifies which sensor triggered it.
+// ============================================================
+model Anomaly {
+  id            String    @id @default(cuid())
+  deviceId      String
+  device        Device    @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  resourceType  String                        // "water" | "electricity"
+  severity      String                        // "low" | "medium" | "high"
+  message       String                        // Human-readable description
+  actualValue   Float                         // The reading that triggered the anomaly
+  baselineValue Float                         // Expected/baseline value for comparison
+  threshold     Float                         // The configured threshold that was exceeded
+  resolvedAt    DateTime?                     // Null if still active
+  timestamp     DateTime                      // When the anomaly condition was detected
+  createdAt     DateTime  @default(now())
+
+  @@index([deviceId, timestamp])
+  @@index([resourceType])
+  @@index([timestamp])
+  @@map("anomalies")
+}
+
+// ============================================================
+// WaterDailyAggregate (Optional)
+// Pre-computed daily summaries. Not required for MVP.
+// Can be populated by a scheduled background job.
+// ============================================================
+model WaterDailyAggregate {
+  id              String   @id @default(cuid())
+  deviceId        String
+  date            DateTime                    // Date only (midnight UTC)
+  totalLitres     Float                       // Sum of water consumed that day
+  avgFlowRateLpm  Float                       // Average flow rate
+  peakFlowRateLpm Float                       // Maximum flow rate recorded
+  readingCount    Int                         // Number of readings that day
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([deviceId, date])
+  @@index([deviceId, date])
+  @@map("water_daily_aggregates")
+}
+
+// ============================================================
+// ElectricityDailyAggregate (Optional)
+// Pre-computed daily summaries. Not required for MVP.
+// ============================================================
+model ElectricityDailyAggregate {
+  id              String   @id @default(cuid())
+  deviceId        String
+  date            DateTime                    // Date only (midnight UTC)
+  totalEnergyKwh  Float                       // Total energy consumed that day
+  avgPowerWatts   Float                       // Average power
+  peakPowerWatts  Float                       // Maximum power recorded
+  avgVoltage      Float                       // Average voltage
+  avgCurrent      Float                       // Average current
+  readingCount    Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([deviceId, date])
+  @@index([deviceId, date])
+  @@map("electricity_daily_aggregates")
+}

@@ -1,0 +1,105 @@
+# =============================================================================
+# docker-compose.yml — Smart IoT Water & Electricity Monitor
+# Spins up the two infrastructure services required by the backend:
+#   1. PostgreSQL 15  — relational database for readings, alerts, and devices
+#   2. Eclipse Mosquitto 2 — lightweight MQTT broker for IoT sensor messages
+#
+# Usage:
+#   Start:   docker compose up -d
+#   Stop:    docker compose down
+#   Logs:    docker compose logs -f
+#   Destroy: docker compose down -v   (WARNING: removes all persistent data)
+# =============================================================================
+
+version: '3.8'
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 15 — Primary relational database
+  # Alpine variant chosen for minimal image size (~85 MB vs ~400 MB full image)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: smart_monitor_db
+
+    environment:
+      # Name of the default database created on first startup
+      POSTGRES_DB: smart_monitor
+      # Superuser username for the PostgreSQL instance
+      POSTGRES_USER: postgres
+      # Superuser password — change this in production and use Docker Secrets
+      POSTGRES_PASSWORD: password
+
+    ports:
+      # Host port 5432 → container port 5432 (standard PostgreSQL port)
+      # Exposes the database to the host for tools like pgAdmin, Prisma Studio,
+      # and the backend running outside Docker (during development).
+      - '5432:5432'
+
+    volumes:
+      # Named volume: persists all database files across container restarts.
+      # Data survives `docker compose down` but is removed by `docker compose down -v`.
+      - postgres_data:/var/lib/postgresql/data
+
+    # Always restart the container unless it was explicitly stopped by the operator
+    restart: unless-stopped
+
+    healthcheck:
+      # pg_isready checks whether the PostgreSQL server is accepting connections.
+      # The backend's connection pool will wait for this check to pass before
+      # attempting migrations or queries (when using depends_on with condition).
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      # Time between consecutive health checks
+      interval: 10s
+      # Maximum time to wait for a single check before marking it as failed
+      timeout: 5s
+      # Number of consecutive failures required before the container is marked unhealthy
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Eclipse Mosquitto 2 — MQTT Message Broker
+  # Handles all publish / subscribe communication between:
+  #   • ESP32 firmware (publishes sensor readings)
+  #   • Node.js backend (subscribes to topics, persists data, detects anomalies)
+  #   • Optional browser clients (WebSocket on port 9001)
+  # ---------------------------------------------------------------------------
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: smart_monitor_mqtt
+
+    ports:
+      # Host 1883 → container 1883: standard MQTT (TCP) port.
+      # Used by the ESP32 firmware and the Node.js backend MQTT client.
+      - '1883:1883'
+      # Host 9001 → container 9001: MQTT over WebSockets port.
+      # Optional — enables browser-based MQTT clients (e.g., MQTT.js in the browser).
+      - '9001:9001'
+
+    volumes:
+      # Mount the custom broker configuration from the repository.
+      # This file controls listeners, authentication, persistence, and logging.
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      # Named volume: persists retained messages and QoS queues across restarts.
+      - mosquitto_data:/mosquitto/data
+      # Named volume: persists broker log files across container restarts.
+      - mosquitto_log:/mosquitto/log
+
+    # Always restart unless explicitly stopped — critical infrastructure service
+    restart: unless-stopped
+
+# =============================================================================
+# Named Volumes
+# Docker manages the lifecycle of these volumes on the host filesystem.
+# Location on Linux/macOS: /var/lib/docker/volumes/<project>_<name>/_data
+# Location on Windows (WSL2 backend): \\wsl$\docker-desktop-data\...
+# =============================================================================
+volumes:
+  # PostgreSQL data directory — stores all database files (WAL, tables, indices)
+  postgres_data:
+
+  # Mosquitto retained message store and QoS message queues
+  mosquitto_data:
+
+  # Mosquitto log files
+  mosquitto_log:

@@ -1,0 +1,112 @@
+{
+  /*
+   * tsconfig.json — TypeScript Compiler Configuration
+   * Project : Smart IoT Based Water & Electricity Monitoring — Backend
+   *
+   * Target runtime : Node.js 20.x (LTS)
+   * Module system  : CommonJS (required by ts-node and most Node.js tooling)
+   *
+   * Key decisions:
+   *   • target ES2022 to use modern JS features (top-level await, class fields)
+   *     that Node 20 supports natively without down-compilation overhead.
+   *   • strict: true enables the full suite of strict type checks. This prevents
+   *     common bugs (null derefs, implicit any) at the cost of more explicit code.
+   *   • sourceMap + declarationMap: true gives precise stack traces in production
+   *     and enables IDE "go to source" from .d.ts files.
+   */
+  "compilerOptions": {
+
+    /* -------------------------------------------------------------------------
+     * Language & Environment
+     * ---------------------------------------------------------------------- */
+
+    // Compile TypeScript to ES2022 JavaScript. Node 20 supports all ES2022
+    // features natively, so no polyfills are needed.
+    "target": "ES2022",
+
+    // Emit CommonJS modules (require / module.exports). Required because:
+    //   • ts-node (dev server) defaults to CJS.
+    //   • @prisma/client and many Express middleware packages are CJS.
+    //   • Switching to ESM requires "type":"module" in package.json and
+    //     additional configuration — a future migration path.
+    "module": "commonjs",
+
+    // Include only the ES2022 standard library type definitions.
+    // Node-specific globals (Buffer, process, __dirname) are provided
+    // by @types/node listed in devDependencies.
+    "lib": ["ES2022"],
+
+    /* -------------------------------------------------------------------------
+     * Emit (Output)
+     * ---------------------------------------------------------------------- */
+
+    // Directory where compiled .js files are written.
+    // The `start` script runs `node dist/server.js`.
+    "outDir": "./dist",
+
+    // Root directory of TypeScript source files. Must align with `include`.
+    // TypeScript will error if any source file falls outside this directory.
+    "rootDir": "./src",
+
+    // Generate .js.map files alongside every compiled .js file.
+    // Allows Node.js to report errors with original TypeScript line numbers
+    // (via source-map-support) and enables VS Code debugger breakpoints.
+    "sourceMap": true,
+
+    // Emit .d.ts type declaration files. Useful if any other package in the
+    // monorepo imports types from the backend (e.g., shared DTO types).
+    "declaration": true,
+
+    // Emit .d.ts.map files that map declarations back to TypeScript source.
+    // Enables "Go to Definition" in IDEs to jump to .ts source, not .d.ts.
+    "declarationMap": true,
+
+    /* -------------------------------------------------------------------------
+     * Module Resolution
+     * ---------------------------------------------------------------------- */
+
+    // Use Node.js module resolution algorithm (looks in node_modules,
+    // respects package.json "main", etc.). Correct for CJS/CommonJS projects.
+    "moduleResolution": "node",
+
+    // Allows `import fs from 'fs'` instead of `import * as fs from 'fs'`
+    // for CJS modules that don't have a default export. Required for many
+    // npm packages (express, mqtt, dotenv, etc.) to be imported cleanly.
+    "esModuleInterop": true,
+
+    // Allow importing .json files with `import data from './data.json'`.
+    // Used for reading package.json version or static config files.
+    "resolveJsonModule": true,
+
+    /* -------------------------------------------------------------------------
+     * Type Checking
+     * ---------------------------------------------------------------------- */
+
+    // Enable all strict type-checking options simultaneously. Equivalent to:
+    //   strictNullChecks, strictFunctionTypes, strictBindCallApply,
+    //   strictPropertyInitialization, noImplicitAny, noImplicitThis,
+    //   alwaysStrict (emit "use strict"), useUnknownInCatchVariables
+    "strict": true,
+
+    // Skip type-checking of declaration files in node_modules.
+    // Significantly speeds up compilation. Safe because library authors are
+    // responsible for the correctness of their own .d.ts files.
+    "skipLibCheck": true,
+
+    // Raise an error if a file is referenced with different casing than its
+    // actual filename. Prevents subtle cross-platform bugs (Windows is
+    // case-insensitive, Linux is case-sensitive).
+    "forceConsistentCasingInFileNames": true
+  },
+
+  // Files to include in the compilation.
+  // `src/**/*`     — All application source code.
+  // `scripts/**/*` — Utility scripts (mqtt-simulator.ts, seed.ts, etc.)
+  //                  that are run directly with ts-node but not bundled into dist.
+  "include": ["src/**/*", "scripts/**/*"],
+
+  // Files / directories to exclude from compilation.
+  // node_modules and dist are always excluded regardless, but listing them
+  // explicitly improves editor performance and avoids accidental re-compilation.
+  "exclude": ["node_modules", "dist"]
+}
