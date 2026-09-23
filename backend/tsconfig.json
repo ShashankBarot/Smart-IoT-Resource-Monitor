@@ -45,8 +45,9 @@
     "outDir": "./dist",
 
     // Root directory of TypeScript source files. Must align with `include`.
-    // TypeScript will error if any source file falls outside this directory.
-    "rootDir": "./src",
+    // Set to "." (backend root) so it covers both src/ and scripts/ directories,
+    // both of which are listed in the include array below.
+    "rootDir": ".",
 
     // Generate .js.map files alongside every compiled .js file.
     // Allows Node.js to report errors with original TypeScript line numbers

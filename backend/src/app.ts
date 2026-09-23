@@ -110,17 +110,19 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // ── API routes ────────────────────────────────────────────────────────────────
 
 /**
- * GET  /api/health          – liveness + readiness probe
- * GET  /api/devices         – registered device list and status
- * GET  /api/water           – water reading history & aggregates
- * GET  /api/electricity     – electricity reading history & aggregates
- * GET  /api/anomalies       – anomaly records
+ * Mount routes for both /api/v1 (frontend default) and /api (legacy/docs).
+ * Also support both /device and /devices.
  */
-app.use('/api/health',      healthRouter);
-app.use('/api/devices',     devicesRouter);
-app.use('/api/water',       waterRouter);
-app.use('/api/electricity', electricityRouter);
-app.use('/api/anomalies',   anomaliesRouter);
+const apiPrefixes = ['/api/v1', '/api'];
+
+for (const prefix of apiPrefixes) {
+  app.use(`${prefix}/health`,      healthRouter);
+  app.use(`${prefix}/devices`,     devicesRouter);
+  app.use(`${prefix}/device`,      devicesRouter);
+  app.use(`${prefix}/water`,       waterRouter);
+  app.use(`${prefix}/electricity`, electricityRouter);
+  app.use(`${prefix}/anomalies`,   anomaliesRouter);
+}
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 

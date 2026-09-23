@@ -17,11 +17,12 @@ import http from 'http';
 import { app, attachSocketIO } from './app';
 import { Server as SocketIOServer } from 'socket.io';
 import { connectMqttSubscriber, disconnectMqttSubscriber } from './mqtt/subscriber';
+import { startDeviceWatchdog, stopDeviceWatchdog } from './services/deviceService';
 import logger from './utils/logger';
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
-const PORT    = parseInt(process.env['PORT'] ?? '4000', 10);
+const PORT    = parseInt(process.env['PORT'] ?? '3001', 10);
 const HOST    = process.env['HOST'] ?? '0.0.0.0';
 const NODE_ENV = process.env['NODE_ENV'] ?? 'development';
 
@@ -74,6 +75,9 @@ io.on('connection', (socket) => {
  */
 connectMqttSubscriber(io);
 
+// Start the periodic watchdog timer for detecting offline devices
+startDeviceWatchdog(io);
+
 // ── 5. Start listening ────────────────────────────────────────────────────────
 
 httpServer.listen(PORT, HOST, () => {
@@ -123,6 +127,9 @@ async function shutdown(signal: string): Promise<void> {
   // Disconnect from MQTT broker
   await disconnectMqttSubscriber();
   logger.info('[Server] MQTT subscriber disconnected.');
+
+  // Stop device watchdog timer
+  stopDeviceWatchdog();
 
   logger.info('[Server] Shutdown complete. Goodbye! 👋');
   process.exit(0);
