@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { ReactNode, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "./Dock.css";
 
 export type DockItemData = {
@@ -28,6 +29,41 @@ type DockItemProps = DockItemData & {
   baseItemSize: number;
 };
 
+/** Renders a tooltip directly in document.body so it escapes the navbar's
+ *  backdrop-filter stacking context (which clips children outside its bounds). */
+function PortalLabel({ label, anchorRef, visible }: { label: string; anchorRef: React.RefObject<HTMLDivElement | null>; visible: boolean }) {
+  const [coords, setCoords] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (!visible || !anchorRef.current) return;
+    const rect = anchorRef.current.getBoundingClientRect();
+    setCoords({
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 8,
+    });
+  }, [visible, anchorRef]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <AnimatePresence>
+      {visible && (
+        <motion.span
+          className="dock-label-portal"
+          style={{ left: coords.x, top: coords.y }}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.15 }}
+        >
+          {label}
+        </motion.span>
+      )}
+    </AnimatePresence>,
+    document.body
+  );
+}
+
 function DockItem({ icon, label, onClick, className = "", mouseX, distance, magnification, baseItemSize }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
   const hovered = useMotionValue(0);
@@ -40,7 +76,6 @@ function DockItem({ icon, label, onClick, className = "", mouseX, distance, magn
   const targetSize = useTransform(distanceFromMouse, [-distance, 0, distance], [baseItemSize, magnification, baseItemSize]);
   const size = useSpring(targetSize, { mass: 0.1, stiffness: 150, damping: 12 });
 
-  // Subscribe to motion value changes so React re-renders the label
   useEffect(() => {
     return hovered.on("change", (v) => setIsHovered(v === 1));
   }, [hovered]);
@@ -54,35 +89,25 @@ function DockItem({ icon, label, onClick, className = "", mouseX, distance, magn
   };
 
   return (
-    <motion.div
-      ref={ref}
-      style={{ width: size, height: size }}
-      className={`dock-item ${className}`}
-      tabIndex={0}
-      role="button"
-      aria-label={label}
-      onClick={activate}
-      onKeyDown={onKeyDown}
-      onHoverStart={() => hovered.set(1)}
-      onHoverEnd={() => hovered.set(0)}
-      onFocus={() => hovered.set(1)}
-      onBlur={() => hovered.set(0)}
-    >
-      <div className="dock-icon">{icon}</div>
-      <AnimatePresence>
-        {isHovered && (
-          <motion.span
-            className="dock-label"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </motion.div>
+    <>
+      <motion.div
+        ref={ref}
+        style={{ width: size, height: size }}
+        className={`dock-item ${className}`}
+        tabIndex={0}
+        role="button"
+        aria-label={label}
+        onClick={activate}
+        onKeyDown={onKeyDown}
+        onHoverStart={() => hovered.set(1)}
+        onHoverEnd={() => hovered.set(0)}
+        onFocus={() => hovered.set(1)}
+        onBlur={() => hovered.set(0)}
+      >
+        <div className="dock-icon">{icon}</div>
+      </motion.div>
+      <PortalLabel label={label} anchorRef={ref} visible={isHovered} />
+    </>
   );
 }
 
