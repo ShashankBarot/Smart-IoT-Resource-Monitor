@@ -39,27 +39,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full">
         {/*
-          LAYER 0 — Beams background canvas (fixed, z-index: 0, covers entire screen)
-          Exact React Bits Beams configuration requested by user
+          LAYER 0 — Beams background canvas (position: fixed, z-index: 0)
+          The canvas itself sets backgroundColor="#000000" so it IS the page background.
+          pointer-events: none so it never blocks interaction.
         */}
         <div className="app-bg-layer">
           <Beams
             beamWidth={3}
-            beamHeight={30}
-            beamNumber={20}
+            beamHeight={15}
+            beamNumber={12}
             lightColor="#00fdff"
+            beamColor="#000000"
+            backgroundColor="#000000"
             speed={6}
             noiseIntensity={1.75}
             scale={0.2}
             rotation={30}
-            beamColor="#000000"
-            backgroundColor="#000000"
+            lightMode={false}
           />
         </div>
 
         {/*
-          LAYER 1 — Application shell (relative, z-index: 1)
-          Allows Beams to show through translucent cards and gaps
+          LAYER 1 — Application shell (position: relative, z-index: 1)
+          All backgrounds here must be transparent or translucent to let
+          the Beams canvas show through the gaps between cards.
         */}
         <div className="app-shell">
           <Navigation />
