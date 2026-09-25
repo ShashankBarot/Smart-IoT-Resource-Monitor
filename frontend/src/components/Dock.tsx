@@ -31,12 +31,21 @@ type DockItemProps = DockItemData & {
 function DockItem({ icon, label, onClick, className = "", mouseX, distance, magnification, baseItemSize }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
   const hovered = useMotionValue(0);
+  const [isHovered, setIsHovered] = useState(false);
+
   const distanceFromMouse = useTransform(mouseX, (value) => {
     const rect = ref.current?.getBoundingClientRect();
     return value - (rect?.x ?? 0) - baseItemSize / 2;
   });
   const targetSize = useTransform(distanceFromMouse, [-distance, 0, distance], [baseItemSize, magnification, baseItemSize]);
   const size = useSpring(targetSize, { mass: 0.1, stiffness: 150, damping: 12 });
+
+  useEffect(() => {
+    const unsubscribe = hovered.on("change", (latest) => {
+      setIsHovered(latest === 1);
+    });
+    return () => unsubscribe();
+  }, [hovered]);
 
   const activate = () => onClick?.();
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -47,16 +56,47 @@ function DockItem({ icon, label, onClick, className = "", mouseX, distance, magn
   };
 
   return (
-    <motion.div ref={ref} style={{ width: size, height: size }} className={`dock-item ${className}`} tabIndex={0} role="button" aria-label={label} onClick={activate} onKeyDown={onKeyDown} onHoverStart={() => hovered.set(1)} onHoverEnd={() => hovered.set(0)} onFocus={() => hovered.set(1)} onBlur={() => hovered.set(0)}>
+    <motion.div
+      ref={ref}
+      style={{ width: size, height: size }}
+      className={`dock-item ${className}`}
+      tabIndex={0}
+      role="button"
+      aria-label={label}
+      onClick={activate}
+      onKeyDown={onKeyDown}
+      onHoverStart={() => hovered.set(1)}
+      onHoverEnd={() => hovered.set(0)}
+      onFocus={() => hovered.set(1)}
+      onBlur={() => hovered.set(0)}
+    >
       <div className="dock-icon">{icon}</div>
       <AnimatePresence>
-        {hovered.get() === 1 && <motion.span className="dock-label" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: -8 }} exit={{ opacity: 0, y: 4 }}>{label}</motion.span>}
+        {isHovered && (
+          <motion.span
+            className="dock-label"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
+            {label}
+          </motion.span>
+        )}
       </AnimatePresence>
     </motion.div>
   );
 }
 
-export default function Dock({ items, className = "", distance = 160, panelHeight = 52, baseItemSize = 38, dockHeight = 88, magnification = 56 }: DockProps) {
+export default function Dock({
+  items,
+  className = "",
+  distance = 160,
+  panelHeight = 52,
+  baseItemSize = 38,
+  dockHeight = 88,
+  magnification = 56,
+}: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const hovered = useMotionValue(0);
   const heightRow = useTransform(hovered, [0, 1], [panelHeight, Math.max(dockHeight, magnification + 20)]);
@@ -65,8 +105,33 @@ export default function Dock({ items, className = "", distance = 160, panelHeigh
 
   return (
     <motion.div className="dock-outer" style={{ height }}>
-      <motion.div className={`dock-panel ${className}`.trim()} style={{ height: panelHeight }} role="toolbar" aria-label="Application navigation" onMouseMove={(event) => { hovered.set(1); setActiveHover(true); mouseX.set(event.clientX); }} onMouseLeave={() => { hovered.set(0); setActiveHover(false); mouseX.set(Infinity); }} data-hovered={activeHover}>
-        {items.map((item) => <DockItem key={item.label} {...item} mouseX={mouseX} distance={distance} magnification={magnification} baseItemSize={baseItemSize} />)}
+      <motion.div
+        className={`dock-panel ${className}`.trim()}
+        style={{ height: panelHeight }}
+        role="toolbar"
+        aria-label="Application navigation"
+        onMouseMove={(event) => {
+          hovered.set(1);
+          setActiveHover(true);
+          mouseX.set(event.clientX);
+        }}
+        onMouseLeave={() => {
+          hovered.set(0);
+          setActiveHover(false);
+          mouseX.set(Infinity);
+        }}
+        data-hovered={activeHover}
+      >
+        {items.map((item) => (
+          <DockItem
+            key={item.label}
+            {...item}
+            mouseX={mouseX}
+            distance={distance}
+            magnification={magnification}
+            baseItemSize={baseItemSize}
+          />
+        ))}
       </motion.div>
     </motion.div>
   );

@@ -3,6 +3,7 @@
   min-width: 0;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
 .dock-panel {
@@ -16,6 +17,7 @@
   background: rgba(5, 6, 7, 0.52);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(18px);
+  overflow: visible;
 }
 
 .dock-panel[data-hovered="true"] {
@@ -34,6 +36,7 @@
   cursor: pointer;
   outline: none;
   transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
+  overflow: visible;
 }
 
 .dock-item:hover,
@@ -55,19 +58,24 @@
   justify-content: center;
 }
 
+/* Tooltip positioned downwards below the icon */
 .dock-label {
   position: absolute;
-  top: -28px;
+  top: calc(100% + 10px);
   left: 50%;
-  white-space: nowrap;
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 4px 8px;
-  background: #050607;
-  color: #fff;
-  font-size: 11px;
-  pointer-events: none;
   transform: translateX(-50%);
+  white-space: nowrap;
+  border: 1px solid rgba(153, 132, 216, 0.4);
+  border-radius: 8px;
+  padding: 5px 12px;
+  background: rgba(10, 12, 16, 0.95);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
 }
 
 @media (max-width: 720px) {

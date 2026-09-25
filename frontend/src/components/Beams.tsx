@@ -185,13 +185,13 @@ interface BeamsProps {
 // ─── Beams (main export) ──────────────────────────────────────────────────────
 
 const Beams: FC<BeamsProps> = ({
-  beamWidth = 2,
-  beamHeight = 15,
-  beamNumber = 12,
-  lightColor = '#ffffff',
+  beamWidth = 3,
+  beamHeight = 30,
+  beamNumber = 20,
+  lightColor = '#00fdff',
   beamColor = '#000000',
   backgroundColor = '#000000',
-  speed = 2,
+  speed = 6,  
   noiseIntensity = 1.75,
   scale = 0.2,
   rotation = 0,
