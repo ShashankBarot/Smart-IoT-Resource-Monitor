@@ -31,15 +31,40 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
+        {/*
+          LAYER 0 — Beams background canvas (position: fixed, z-index: 0)
+          The canvas itself sets backgroundColor="#000000" so it IS the page background.
+          pointer-events: none so it never blocks interaction.
+        */}
+        <div className="app-bg-layer">
+          <Beams
+            beamWidth={3}
+            beamHeight={18}
+            beamNumber={10}
+            lightColor="#00E5FF"
+            beamColor="#083B4A"
+            backgroundColor="#000000"
+            speed={1.5}
+            noiseIntensity={1.5}
+            scale={0.25}
+            rotation={-12}
+            lightMode={false}
+          />
+        </div>
+
+        {/*
+          LAYER 1 — Application shell (position: relative, z-index: 1)
+          All backgrounds here must be transparent or translucent to let
+          the Beams canvas show through the gaps between cards.
+        */}
         <div className="app-shell">
-          <Beams beamWidth={1.7} beamHeight={14} beamNumber={9} beamColor="#9984d8" lightColor="#ffffff" speed={0.8} noiseIntensity={1.2} scale={0.24} />
           <Navigation />
           <div className="app-content">{children}</div>
         </div>
