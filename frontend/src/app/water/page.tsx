@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Droplets } from "lucide-react";
 import MetricCard from "@/components/MetricCard";
 import SensorChart from "@/components/SensorChart";
 import HistoryTable from "@/components/HistoryTable";
@@ -179,7 +180,7 @@ export default function WaterPage() {
             </div>
 
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-400/10 text-2xl">
-              💧
+              <Droplets size={22} strokeWidth={1.8} aria-hidden="true" />
             </div>
           </div>
 

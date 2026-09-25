@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { isMqttConnected } from '../mqtt/subscriber';
 
 const router = Router();
 
@@ -12,7 +13,8 @@ router.get('/', async (_req: Request, res: Response) => {
     dbStatus = 'error';
   }
 
-  const isHealthy = dbStatus === 'ok';
+  const mqttStatus: 'ok' | 'error' = isMqttConnected() ? 'ok' : 'error';
+  const isHealthy = dbStatus === 'ok' && mqttStatus === 'ok';
 
   res.status(isHealthy ? 200 : 503).json({
     status: isHealthy ? 'ok' : 'degraded',
@@ -20,7 +22,7 @@ router.get('/', async (_req: Request, res: Response) => {
     version: '1.0.0',
     services: {
       database: dbStatus,
-      mqtt: 'ok',
+      mqtt: mqttStatus,
     },
   });
 });

@@ -32,7 +32,7 @@ export default function SensorChart({
 }: SensorChartProps) {
   const isWater = type === "water";
 
-  const chartColor = isWater ? "#22d3ee" : "#fb923c";
+  const chartColor = isWater ? "#9984d8" : "#3fcb7f";
   const gradientId = isWater ? "waterChartGradient" : "electricityChartGradient";
 
   return (

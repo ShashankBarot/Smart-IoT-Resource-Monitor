@@ -12,6 +12,11 @@ export async function recordWaterReading(input: RecordWaterInput) {
   try {
     const readingTime = input.timestamp ? new Date(input.timestamp) : new Date();
 
+    const existing = await prisma.waterReading.findFirst({
+      where: { deviceId: input.deviceId, timestamp: readingTime },
+    });
+    if (existing) return existing;
+
     const reading = await prisma.waterReading.create({
       data: {
         deviceId: input.deviceId,

@@ -1,7 +1,7 @@
 # Smart IoT-Based Water and Electricity Consumption Monitoring System
 
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=next.js&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![MQTT](https://img.shields.io/badge/MQTT-3.1.1-660066?style=for-the-badge&logo=eclipse-mosquitto&logoColor=white)
@@ -113,8 +113,7 @@ Ensure the following are installed and available on your development machine bef
 |---|---|---|
 | Node.js | 20.x LTS or higher | [nodejs.org](https://nodejs.org) |
 | npm | 10.x (bundled with Node 20) | Comes with Node.js |
-| PostgreSQL | 15.x | [postgresql.org](https://www.postgresql.org/) |
-| Mosquitto MQTT Broker | 2.x | [mosquitto.org](https://mosquitto.org/) |
+| Docker Desktop | Latest | Runs PostgreSQL 15 and Mosquitto 2 through Compose |
 | Git | 2.x | For version control |
 | Arduino IDE / VS Code + PlatformIO | Latest | For ESP32 firmware (Member 1 only) |
 
@@ -146,10 +145,10 @@ Open `.env` in your editor and set the following:
 
 ```env
 # PostgreSQL connection string
-DATABASE_URL="postgresql://postgres:yourpassword@localhost:5432/smart_monitor"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/smart_monitor"
 
 # MQTT broker settings
-MQTT_BROKER_URL="mqtt://localhost"
+MQTT_BROKER_URL="mqtt://localhost:1883"
 MQTT_PORT=1883
 MQTT_USERNAME=""
 MQTT_PASSWORD=""
@@ -199,7 +198,7 @@ Open `.env.local` in your editor:
 
 ```env
 # URL of the backend REST API
-NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:3001
 
 # URL for Socket.IO WebSocket connection
 NEXT_PUBLIC_WS_URL=http://localhost:3001
@@ -245,18 +244,11 @@ Ensure Mosquitto is installed and start it with the project configuration file:
 
 ```bash
 # From the repo root
-mosquitto -c mosquitto.conf -v
+docker compose up -d
 ```
 
-A minimal `mosquitto.conf` for local development:
+The Compose service uses [`docker/mosquitto/mosquitto.conf`](docker/mosquitto/mosquitto.conf).
 
-```conf
-listener 1883
-allow_anonymous true
-log_type all
-```
-
-> **Note:** For production or demo environments, configure `allow_anonymous false` and provide a password file.
 
 ---
 

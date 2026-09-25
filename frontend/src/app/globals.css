@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ffffff;
+  --surface: #050607;
+  --surface-raised: #090a0b;
+  --lavender-pulse: #9984d8;
+  --mint-signal: #3fcb7f;
+  --ash-gray: #b3b3b3;
+  --steel-gray: #808080;
+  --line: #333333;
 }
 
 @theme inline {
@@ -12,15 +19,178 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.app-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background: #000;
+}
+
+.app-content {
+  min-width: 0;
+}
+
+.control-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: 100%;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.24);
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(18px);
+}
+
+.control-nav-inner {
+  display: flex;
+  min-height: 64px;
+  width: min(1200px, calc(100% - 32px));
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.app-content {
+  margin-left: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.brand-name {
+  white-space: nowrap;
+}
+
+.control-links {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.control-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--ash-gray);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 160ms ease, background 160ms ease;
+}
+
+.control-link:hover,
+.control-link-active {
+  background: #050607;
+  color: #fff;
+}
+
+.control-link-active {
+  box-shadow: inset 0 0 0 1px rgba(153, 132, 216, 0.38);
+}
+
+.live-pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(63, 203, 127, 0.35);
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: var(--mint-signal);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.live-pill span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--mint-signal);
+  box-shadow: 0 0 12px rgba(63, 203, 127, 0.65);
+}
+
+.app-content [class*="bg-[#07111f]"],
+.app-content [class*="bg-[#0b1728]"],
+.app-content [class*="bg-[#0f1d31]"] {
+  background-color: #000 !important;
+}
+
+.app-content [class*="bg-cyan-400/5"],
+.app-content [class*="bg-orange-400/5"],
+.app-content [class*="bg-purple-400/5"],
+.app-content [class*="bg-green-400/5"] {
+  background-color: #050607 !important;
+}
+
+.app-content [class*="text-cyan-400"],
+.app-content [class*="text-purple-400"] {
+  color: var(--lavender-pulse) !important;
+}
+
+.app-content [class*="text-orange-400"],
+.app-content [class*="text-green-400"] {
+  color: var(--mint-signal) !important;
+}
+
+.app-content [class*="border-cyan-400"],
+.app-content [class*="border-purple-400"] {
+  border-color: rgba(153, 132, 216, 0.35) !important;
+}
+
+.app-content [class*="border-orange-400"],
+.app-content [class*="border-green-400"] {
+  border-color: rgba(63, 203, 127, 0.35) !important;
+}
+
+.app-content h1,
+.app-content h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+@media (max-width: 900px) {
+  .control-nav-inner {
+    width: min(100% - 24px, 720px);
+    gap: 12px;
+  }
+
+  .control-links {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .control-link span {
+    display: none;
+  }
+
+  .control-link {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 520px) {
+  .brand-name {
+    display: none;
+  }
 }

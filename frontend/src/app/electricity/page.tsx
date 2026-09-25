@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Zap } from "lucide-react";
 import MetricCard from "@/components/MetricCard";
 import SensorChart from "@/components/SensorChart";
 import HistoryTable from "@/components/HistoryTable";
@@ -81,11 +82,6 @@ export default function ElectricityPage() {
   }
 
   const latestReading = readings[readings.length - 1];
-
-  const peakPower =
-    readings.length > 0
-      ? Math.max(...readings.map((reading) => reading.power))
-      : 0;
 
   const chartData = readings.map((reading) => ({
     time: new Date(reading.timestamp).toLocaleTimeString([], {
@@ -182,7 +178,7 @@ export default function ElectricityPage() {
             </div>
 
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-400/10 text-2xl">
-              ⚡
+              <Zap size={22} strokeWidth={1.8} aria-hidden="true" />
             </div>
           </div>
 

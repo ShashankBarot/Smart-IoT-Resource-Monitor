@@ -59,6 +59,7 @@ model WaterReading {
 
   @@index([deviceId, timestamp])              // For per-device time-range queries
   @@index([timestamp])                        // For global time-range queries
+  @@unique([deviceId, timestamp])             // MQTT QoS 1 duplicate protection
   @@map("water_readings")
 }
 
@@ -79,6 +80,7 @@ model ElectricityReading {
 
   @@index([deviceId, timestamp])
   @@index([timestamp])
+  @@unique([deviceId, timestamp])
   @@map("electricity_readings")
 }
 

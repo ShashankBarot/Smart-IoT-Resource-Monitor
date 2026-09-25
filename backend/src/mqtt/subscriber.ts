@@ -15,6 +15,10 @@ import { checkWaterAnomalies, checkElectricityAnomalies } from '../services/anom
 
 let client: MqttClient | null = null;
 
+export function isMqttConnected(): boolean {
+  return client?.connected === true;
+}
+
 export function connectMqttSubscriber(io: SocketIOServer): MqttClient {
   if (client) {
     return client;

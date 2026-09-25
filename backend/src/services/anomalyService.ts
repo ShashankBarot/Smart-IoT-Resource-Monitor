@@ -97,6 +97,7 @@ export async function checkWaterAnomalies(
 ) {
   const { deviceId, flowRateLpm } = reading;
   const cooldown = config.anomaly.cooldownMinutes;
+  const readingTimestamp = reading.timestamp ? new Date(reading.timestamp) : undefined;
 
   // 1. Continuous flow duration check
   if (flowRateLpm > config.anomaly.waterMinFlowThreshold) {
@@ -127,6 +128,7 @@ export async function checkWaterAnomalies(
           baselineValue: 0,
           threshold: config.anomaly.waterContinuousMinutes.low,
           unit: 'min',
+          timestamp: readingTimestamp,
         });
       }
     }
@@ -136,7 +138,7 @@ export async function checkWaterAnomalies(
   }
 
   // 2. High instantaneous flow rate check (e.g. > 10 L/min or config limit)
-  const highFlowThreshold = Math.min(config.anomaly.waterFlowMaxLmin, 10);
+  const highFlowThreshold = config.anomaly.waterFlowMaxLmin;
   if (flowRateLpm > highFlowThreshold) {
     const msg = 'Unusually high water flow detected';
     if (!(await recentAnomalyExists(deviceId, msg, cooldown))) {
@@ -149,6 +151,7 @@ export async function checkWaterAnomalies(
         baselineValue: 3.5,
         threshold: highFlowThreshold,
         unit: 'L/min',
+        timestamp: readingTimestamp,
       });
     }
   }
@@ -168,6 +171,7 @@ export async function checkElectricityAnomalies(
 ) {
   const { deviceId, voltage, power } = reading;
   const cooldown = config.anomaly.cooldownMinutes;
+  const readingTimestamp = reading.timestamp ? new Date(reading.timestamp) : undefined;
 
   // 1. Voltage out of safe range
   if (voltage < config.anomaly.electricityVoltageMin || voltage > config.anomaly.electricityVoltageMax) {
@@ -182,12 +186,13 @@ export async function checkElectricityAnomalies(
         baselineValue: 230,
         threshold: voltage < config.anomaly.electricityVoltageMin ? config.anomaly.electricityVoltageMin : config.anomaly.electricityVoltageMax,
         unit: 'V',
+        timestamp: readingTimestamp,
       });
     }
   }
 
   // 2. High power threshold (e.g. > 700W or config limit > 3000W)
-  const powerThreshold = Math.min(config.anomaly.electricityPowerMaxW, 1000);
+  const powerThreshold = config.anomaly.electricityPowerMaxW;
   if (power > powerThreshold) {
     const msg = 'Power consumption increased above normal level';
     if (!(await recentAnomalyExists(deviceId, msg, cooldown))) {
@@ -200,6 +205,7 @@ export async function checkElectricityAnomalies(
         baselineValue: 500,
         threshold: powerThreshold,
         unit: 'W',
+        timestamp: readingTimestamp,
       });
     }
   }
@@ -227,6 +233,7 @@ export async function checkElectricityAnomalies(
             baselineValue: parseFloat(avgPower.toFixed(1)),
             threshold: parseFloat((avgPower * config.anomaly.electricityBaselineMultiplier).toFixed(1)),
             unit: 'W',
+            timestamp: readingTimestamp,
           });
         }
       }

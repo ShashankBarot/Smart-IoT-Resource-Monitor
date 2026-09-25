@@ -239,6 +239,7 @@ docker-compose.*.local.yml
 
 # Database dump files — may contain sensitive data
 *.sql
+!backend/prisma/migrations/**/*.sql
 *.dump
 *.pgdump
 *.bak

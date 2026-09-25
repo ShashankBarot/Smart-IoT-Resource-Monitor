@@ -31,10 +31,10 @@
 
 /** SSID (name) of your 2.4 GHz Wi-Fi network.
  *  ESP32 does NOT support 5 GHz bands. */
-#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_SSID "Moto G86"
 
 /** WPA2 passphrase for the Wi-Fi network above. */
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define WIFI_PASSWORD "17022007"
 
 /** Maximum time (ms) to wait for a Wi-Fi connection before rebooting.
  *  30 seconds is a safe default for most home / lab routers. */
@@ -47,7 +47,7 @@
 /** IP address or hostname of your MQTT broker.
  *  For a local Mosquitto broker running on a Raspberry Pi, this is typically
  *  something like "192.168.1.10". Do NOT include "mqtt://" prefix. */
-#define MQTT_BROKER_HOST "192.168.1.100"
+#define MQTT_BROKER_HOST "10.241.153.251"
 
 /** Standard unencrypted MQTT port. Change to 8883 for TLS. */
 #define MQTT_BROKER_PORT 1883
@@ -94,6 +94,9 @@
  *  immediately receive the last known value. Set to 0 to disable. */
 #define MQTT_RETAIN 0
 
+/** Retain device status and the LWT, but never time-sensitive readings. */
+#define MQTT_STATUS_RETAIN 1
+
 // =============================================================================
 // TIMING INTERVALS
 // =============================================================================
@@ -114,19 +117,20 @@
 // =============================================================================
 
 /** GPIO pin connected to the YF-S201 water flow sensor signal (yellow) wire.
- *  Must be an interrupt-capable pin. GPIO 27 is a safe choice on ESP32-WROOM-32.
+ *  Must be an interrupt-capable pin. GPIO 18 matches the tested water-flow sketch.
  *  Pull-up to 3.3 V via a 10 kΩ resistor is recommended on the signal line. */
-#define PIN_FLOW_SENSOR 27
+#define PIN_FLOW_SENSOR 18
 
 /** GPIO pin connected to the ZMPT101B voltage sensor module output.
- *  Must be an ADC1 channel (GPIO 32–39). GPIO 34 is input-only, no internal
+ *  Must be an ADC1 channel (GPIO 32–39). GPIO 35 is input-only, no internal
  *  pull-up, which is ideal for this sensor.
  *  ADC2 pins cannot be used while Wi-Fi is active on ESP32. */
-#define PIN_VOLTAGE_SENSOR 34
+#define PIN_VOLTAGE_SENSOR 35
 
 /** GPIO pin connected to the ACS712 current sensor output.
- *  Same ADC1 restriction applies. GPIO 35 is input-only. */
-#define PIN_CURRENT_SENSOR 35
+ *  Same ADC1 restriction applies. GPIO 34 is input-only and matches the tested
+ *  ACS712 RMS sketch. */
+#define PIN_CURRENT_SENSOR 34
 
 /** Built-in LED pin on most ESP32-DevKitC boards (GPIO 2).
  *  Used as a status indicator: blinks on publish, stays ON when MQTT is

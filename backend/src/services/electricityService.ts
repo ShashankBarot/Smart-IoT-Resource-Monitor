@@ -14,6 +14,11 @@ export async function recordElectricityReading(input: RecordElectricityInput) {
   try {
     const readingTime = input.timestamp ? new Date(input.timestamp) : new Date();
 
+    const existing = await prisma.electricityReading.findFirst({
+      where: { deviceId: input.deviceId, timestamp: readingTime },
+    });
+    if (existing) return existing;
+
     const reading = await prisma.electricityReading.create({
       data: {
         deviceId: input.deviceId,

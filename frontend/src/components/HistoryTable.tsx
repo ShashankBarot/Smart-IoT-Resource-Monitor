@@ -18,9 +18,9 @@ export default function HistoryTable({
   type = "water",
 }: HistoryTableProps) {
   const statusStyles = {
-    Normal: "bg-green-400/10 text-green-400",
-    Warning: "bg-orange-400/10 text-orange-400",
-    Critical: "bg-red-400/10 text-red-400",
+    Normal: "bg-[#3fcb7f]/10 text-[#3fcb7f]",
+    Warning: "bg-[#9984d8]/10 text-[#9984d8]",
+    Critical: "bg-white/10 text-white",
   };
 
   const isWater = type === "water";
