@@ -6,7 +6,7 @@
   height: 100%;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.28;
+  opacity: 0.55;
 }
 
 .beams-container canvas {

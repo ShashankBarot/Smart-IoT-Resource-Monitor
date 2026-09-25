@@ -70,10 +70,9 @@ export default function Beams({
   return (
     <div className={`beams-container ${className}`.trim()}>
       <Canvas dpr={[1, 1.5]} frameloop="always" gl={{ alpha: true, antialias: true }}>
-        <color attach="background" args={[backgroundColor]} />
         <PerspectiveCamera makeDefault position={[0, 0, 20]} fov={30} />
         <ambientLight intensity={0.55} />
-        <directionalLight color={lightColor} intensity={1.4} position={[0, 3, 10]} />
+        <directionalLight color={lightColor} intensity={1.6} position={[0, 3, 10]} />
         <BeamField beamWidth={beamWidth} beamHeight={beamHeight} beamNumber={beamNumber} beamColor={beamColor} speed={speed} noiseIntensity={noiseIntensity} scale={scale} rotation={rotation} />
       </Canvas>
     </div>
