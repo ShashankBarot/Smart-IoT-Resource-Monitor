@@ -11,6 +11,7 @@
  *   • Performs a graceful shutdown on SIGINT / SIGTERM
  * ─────────────────────────────────────────────────────────────────────────────
  */
+// Reload triggered to connect to Docker Mosquitto at 10.241.153.251:1883
 
 import 'dotenv/config';
 import http from 'http';

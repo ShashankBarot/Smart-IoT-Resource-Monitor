@@ -52,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             beamColor="#000000"
             backgroundColor="#000000"
             speed={6}
-            noiseIntensity={1.75}
+            noiseIntensity={1.5}
             scale={0.2}
             rotation={30}
             lightMode={false}
